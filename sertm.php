@@ -6,6 +6,7 @@
 // requires php-imap package in php
 
 // Config
+$servicename = "SERTM";
 $alertservername = "servername";
 $mailfrom = "script@example.com";
 $mailto = "monitoring@example.com"; // monitoring address
@@ -56,7 +57,7 @@ if (file_exists($datafilename)) {
 if (file_exists($datafilename)) {
     if (date ("Y-m", filemtime($datafilename)) !== date('Y-m')) {
         if ($reportto !== "") {
-            $subject = "Monthly SERTM report of " . $alertservername;
+            $subject = "Monthly " . $servicename . " report of " . $alertservername;
             $message = "This is the monthly report of your Email Round-Trip Monitor of " . $alertservername . " server\r\n\r\n" .
                        "Month: " . date ("Y-m", filemtime($datafilename)) . "\r\n" .
                        "Emails sent: " . $data[0] . "\r\n" .
@@ -108,18 +109,19 @@ do {
         mylog ("Mail arrived (" . $j . ")", $logfilename, $debug);
         if (!file_exists($statusfilename)) {
             if ($alertto !== "") {
-                $subject = 'SERTM-UP: ' . $alertservername;
+                $subject = $servicename . '-UP: ' . $alertservername;
                 $message .= " mail arrived\r\nNo need to check your server!\r\n";
                 mymail($mailfrom, $alertto, $subject, $message);
                 mylog ("UP mail sent to " . $alertto, $logfilename, $debug);
             }
-            file_put_contents($statusfilename,"SERTM-OK");
+            $tsnow = date(DATE_RFC822, time());
+            file_put_contents($statusfilename, $servicename . "-OK. Check at: " . $tsnow );
         }
     } else {
         mylog ("Mail not found (" . $j . ")", $logfilename, $debug);
         if (file_exists($statusfilename) and 2 == $j) {
             if ($alertto !== "") {
-                $subject = 'SERTM-DOWN: ' . $alertservername;
+                $subject = $servicename . '-DOWN: ' . $alertservername;
                 $message .= " mail not arrived\r\nCheck your server!\r\n";
                 mymail($mailfrom,$alertto, $subject, $message);
                 mylog ("DOWN mail sent to " . $alertto, $logfilename, $debug);
